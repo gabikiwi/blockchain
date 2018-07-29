@@ -3,13 +3,13 @@ MINING_REWARD = 10
 
 genesis_block = {
         'previous_hash': '', 
-        'index' : 0,
+        'index' : 0,    
         'transactions' : []
         }
 blockchain = [genesis_block]
 open_transactions = []
 owner = 'Gabriel'
-participants = {'Max', 'Gabriel', 'Ana' }
+participants = {'Gabriel', 'Andrei', 'Mihai' }
 
 
 def hash_block(block):
@@ -48,7 +48,8 @@ def get_last_blockchain_value():
 
 def verify_transaction(transaction):
     sender_balance = get_balance(transaction['sender'])
-    return sender_balance >= transaction['amount']
+    print(sender_balance)
+    return (sender_balance >= transaction['amount'])
 
 
 
@@ -62,7 +63,7 @@ def add_transaction(recipient, sender=owner, amount=1.0):
     transaction = {
         'sender': sender, 
         'recipient' : recipient,
-        'mount' : amount
+        'amount' : amount
     }
 
     if verify_transaction(transaction):
@@ -85,6 +86,8 @@ def mine_block():
     #     value = last_block[key]
     #     hashed_block = hashed_block + str(value)
     # print(hashed_block)
+
+    copied_transactions = open_transactions[:]
     open_transactions.append(reward_transaction)
 
     block = {
@@ -176,7 +179,7 @@ while waiting_for_input:
     print('1: Add  new transaction value')
     print('2: Mine a new block')
     print('3: Output the bockchain blocks')
-    print('4: Output list of participants')
+    print('4: Output participants')
     print('h: Manipultate the bockchain')
     print('q: Quit')
     user_choice = get_user_choice()
@@ -195,10 +198,13 @@ while waiting_for_input:
     elif user_choice == '2':
         if mine_block():
             open_transactions = []
+
     elif user_choice == '3':
         print_blockchain_elements()
+
     elif user_choice == '4':
         print(participants)
+
     elif  user_choice == 'h':
         if len(blockchain) >= 1:
            blockchain[0]= {
@@ -215,7 +221,7 @@ while waiting_for_input:
         print_blockchain_elements()
         print('Invalid blockchain!')
         break
-    print(get_balance('Max'))
+    print(get_balance('Gabriel'))
 else:
     print('User left!')
 
