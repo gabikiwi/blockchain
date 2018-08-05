@@ -1,7 +1,7 @@
 from functools import reduce
 import hashlib as hl
 import json
-from collections import OrderedDictq
+from collections import OrderedDict
 
 # Initializing our (empty) blockchain list
 MINING_REWARD = 10
