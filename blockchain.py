@@ -1,6 +1,7 @@
 from functools import reduce
 import hashlib as hl
 import json
+import pickle
 from collections import OrderedDict
 
 from hash_util import hash_block, hash_string_256
@@ -44,7 +45,15 @@ def load_data():
             updated_transactions.append(updated_transaction)
         
         open_transactions = updated_transactions
-        
+
+        #   """ Using pickle for blockchain. 
+        # Use blockchain.p and mode binary data 'rb' """ 
+        #  file_content = pickle.loads(f.read())
+        # print(file_content)
+        #  blockchain = file_content['chain']
+        #  open_transactions = file_content['ot']
+
+ 
 load_data()
 
 def save_data():
@@ -54,6 +63,14 @@ def save_data():
         f.write('\n')
         f.write(json.dumps(open_transactions))
         #f.write(str(open_transactions))
+
+        """ Using pickle for blockchain. 
+        Use blockchain.p and mode binary data 'wb' """ 
+        # save_data = {
+        #     'chain':blockchain,
+        #     'ot': open_transactions
+        # }
+        # f.write(pickle.dumps(save_data))
 
 def valid_proof(transactions, last_hash, proof):
     guess = (str(transactions) + str(last_hash) + str(proof)).encode()
