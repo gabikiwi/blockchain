@@ -3,6 +3,8 @@ import hashlib as hl
 import json
 from collections import OrderedDict
 
+from hash_util import hash_block, hash_string_256
+
 # Initializing our (empty) blockchain list
 MINING_REWARD = 10
 
@@ -17,15 +19,46 @@ open_transactions = []
 owner = 'Gabriel'
 participants = {'Gabriel', 'Andrei', 'Mihai' }
 
-def hash_block(block):
-    """ Hashes the block """
+def load_data():
+    with open('blockchain.txt', mode='r') as f:
+        file_content = f.readlines()
+        global blockchain
+        global open_transactions
+        blockchain = json.loads(file_content[0][:-1])
+        updated_blockchain = []
+        for block in blockchain:
+            updated_block = {
+                    'previous_hash': block['previous_hash'],
+                    'index': block['index'],
+                    'proof': block['proof'],
+                    'transactions' : [OrderedDict
+                    ([('sender',tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
+            }
+            updated_blockchain.append(updated_block)   
+            
+        blockchain = updated_blockchain
+        open_transactions = json.loads(file_content[1])
+        updated_transactions = []
+        for tx in open_transactions:
+            updated_transaction = OrderedDict([('sender',tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
+            updated_transactions.append(updated_transaction)
+        
+        open_transactions = updated_transactions
+        
+load_data()
 
-    return hl.sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
-  #  return '-'.join([str(block[key]) for key in block])
+def save_data():
+    with open('blockchain.txt', mode='w') as f:
+        f.write(json.dumps(blockchain))
+        # f.write(str(blockchain))
+        f.write('\n')
+        f.write(json.dumps(open_transactions))
+        #f.write(str(open_transactions))
 
 def valid_proof(transactions, last_hash, proof):
     guess = (str(transactions) + str(last_hash) + str(proof)).encode()
-    guess_hash = hl.sha256(guess).hexdigest()
+    print('This is your guess',guess)
+    guess_hash = hash_string_256(guess)
     print(guess_hash)
     return guess_hash[0:2] == '00'
 
@@ -36,7 +69,6 @@ def proof_of_work():
     while not valid_proof(open_transactions, last_hash, proof):
         proof += 1
     return proof
-
 
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
@@ -64,7 +96,6 @@ def get_balance(participant):
 
     return amount_received - amount_sent
 
-
 def get_last_blockchain_value():
     """ Returns the last value of the current blockchain. """
     if len(blockchain) < 1:
@@ -79,8 +110,6 @@ def verify_transaction(transaction):
     sender_balance = get_balance(transaction['sender'])
     print(sender_balance)
     return (sender_balance >= transaction['amount'])
-
-
 
 def add_transaction(recipient, sender=owner, amount=1.0):
     """ Append a new value as well as the last blockchain value to the blockchain.
@@ -101,9 +130,9 @@ def add_transaction(recipient, sender=owner, amount=1.0):
         open_transactions.append(transaction)
         participants.add(sender)
         participants.add(recipient)
+        save_data()
         return True
     return False   
-
 
 def mine_block():
     last_block = blockchain [-1]
@@ -139,13 +168,11 @@ def mine_block():
     blockchain.append(block)
     return True
 
-
 def get_user_input():
     """ Returns the input of the user (a new transaction amount) as a float. """
     # Get the user input, transform it from a string to a float and store it in user_input
     user_input = float(input('Your transaction amount please: '))
     return user_input
-
 
 def get_transaction_value():
     """ Returns the input of the user (a new transaction amount) as a float. """
@@ -154,18 +181,15 @@ def get_transaction_value():
     tx_amount = float(input('Your transaction amount please: '))
     return (tx_recipient, tx_amount)
 
-
 def get_user_choice():
     user_input = input('Your choice: ')
     return user_input
-
 
 def print_blockchain_elements():
     """ Output the blockchain list to the console """
     for block in blockchain:
         print('Outputting Block')
         print(block)
-
 
 def verify_chain():
     """ Verify the current blockchain and return True if it's valid, False  """
@@ -180,8 +204,6 @@ def verify_chain():
             return False
 
     return True
-
-
 
 def verify_chain_old():
     # block_index = 0
@@ -210,7 +232,6 @@ def verify_chain_old():
     #         break
     #     block_index += 1
     return is_valid
-
 
 def verify_transactions():
     return all([verify_transaction(tx) for tx in open_transactions])
@@ -255,6 +276,7 @@ while waiting_for_input:
     elif user_choice == '2':
         if mine_block():
             open_transactions = []
+            save_data()
 
     elif user_choice == '3':
         print_blockchain_elements()
