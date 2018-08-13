@@ -1,8 +1,12 @@
 from hash_util import hash_block, hash_string_256
 class Verification:
 
-    
-    def valid_proof(self, transactions, last_hash, proof):
+    @staticmethod
+    def valid_proof(transactions, last_hash, proof):
+        """ Validate a proof of work and sees if it solves the puzzle algorithm 00
+        : last_hash: the previous block's hash which will be stored in the 
+        : proof: The proof number we are testing
+         """
 
         # guess = (str(transactions) + str(last_hash) + str(proof)).encode()
         guess = (str([tx.to_ordered_dict() for tx in transactions]) + str(last_hash) + str(proof)).encode()
@@ -12,7 +16,8 @@ class Verification:
         print(guess_hash, '\n')
         return guess_hash[0:2] == '00'
     
-    def verify_chain(self, blockchain):
+    @classmethod
+    def verify_chain(cls, blockchain):
         """ Verify the current blockchain and return True if it's valid, False  """
         for (index, block) in enumerate(blockchain):
             if index == 0:
@@ -22,20 +27,20 @@ class Verification:
                 return False
             
             # if not valid_proof(block['transactions'][:-1], block['previous_hash'], block['proof']):
-            if not self.valid_proof(block.transactions[:-1], block.previous_hash, block.proof):
+            if not cls.valid_proof(block.transactions[:-1], block.previous_hash, block.proof):
                 print('Proof of work is invalid')
                 return False
         return True
 
-    
-    def verify_transaction(self, transaction, get_balance):
+    @staticmethod
+    def verify_transaction(transaction, get_balance):
         sender_balance = get_balance()
         print(sender_balance)
         return (sender_balance >= transaction.amount)
 
-    
-    def verify_transactions(self, open_transactions, get_balance):
-        return all([self.verify_transaction(tx, get_balance) for tx in open_transactions])
+    @classmethod
+    def verify_transactions(cls, open_transactions, get_balance):
+        return all([cls.verify_transaction(tx, get_balance) for tx in open_transactions])
 
         # is_valid = True
         # for tx in open_transactions:
