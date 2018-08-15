@@ -4,10 +4,14 @@ import json
 import pickle
 # from collections import OrderedDict
 
-from hash_util import hash_block
+# from hash_util import hash_block
 from block import Block
 from transaction import Transaction
-from verification import Verification
+# from verification import Verification
+from utility.hash_util import hash_block
+from utility.verification import Verification
+
+print(__name__)
 
 MINING_REWARD = 10
 class Blockchain:

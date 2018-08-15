@@ -1,4 +1,7 @@
-from hash_util import hash_block, hash_string_256
+
+""" Module Docstrings: Provides verification helper methods. """
+
+from utility.hash_util import hash_block, hash_string_256
 class Verification:
 
     @staticmethod
