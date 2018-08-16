@@ -10,6 +10,8 @@ from transaction import Transaction
 # from verification import Verification
 from utility.hash_util import hash_block
 from utility.verification import Verification
+from wallet import Wallet
+
 
 print(__name__)
 
@@ -28,7 +30,7 @@ class Blockchain:
     @property
     def chain(self):
         return self.__chain[:]
-    
+
     @chain.setter
     def chain(self, val):
         self.__chain = val
@@ -61,18 +63,18 @@ class Blockchain:
                 updated_blockchain = []
                 for block in blockchain:
                     
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
                     # converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
                     # converted_tx = [OrderedDict ([('sender',tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
 
                     # Create a block object which will no longer be a dictionary
                     updated_block = Block(
-                            block['index'],
-                            block['previous_hash'],
-                            converted_tx,
-                            block['proof'],
-                            block['timestamp']                    
-                            )
+                        block['index'],
+                        block['previous_hash'],
+                        converted_tx,
+                        block['proof'],
+                        block['timestamp']                    
+                        )    
                     # updated_block = {
                     #         'previous_hash': block['previous_hash'],
                     #         'index': block['index'],
@@ -86,7 +88,7 @@ class Blockchain:
                 open_transactions = json.loads(file_content[1])
                 updated_transactions = []
                 for tx in open_transactions:
-                    updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['amount'])               
+                    updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount'])               
                     # updated_transaction = OrderedDict([('sender',tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
                     updated_transactions.append(updated_transaction)
                 
@@ -185,7 +187,7 @@ class Blockchain:
     # One required one (transaction_amount) and one optional one (last_transaction)
     # The optional one is optional because it has a default value => [1]
 
-    def add_transaction(self, recipient, sender, amount=1.0):
+    def add_transaction(self, recipient, sender, signature, amount=1.0):
         """ Append a new value as well as the last blockchain value to the blockchain.
             Arguments:
             :sender: The sender of the coins.
@@ -198,8 +200,17 @@ class Blockchain:
         #     'amount' : amount
         # }
 
-        transaction = Transaction(sender, recipient, amount)
-        # transaction = OrderedDict([('sender',sender), ('recipient', recipient), ('amount', amount)])
+        if self.hosting_node == None:
+            return False
+        
+
+        transaction = Transaction(sender, recipient, signature, amount)
+        # transaction = OrderedDict([('sender',sender), ('recipient', recipient), 
+        # ('amount', amount)])
+
+        if not Wallet.verify_transaction(transaction):
+            return False
+
         
         if  Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
@@ -210,6 +221,12 @@ class Blockchain:
         return False   
 
     def mine_block(self):
+
+        """ Create a new block and add open transactions to it """
+        # Fetch the currently last block of the blockchain
+        if self.hosting_node == None:
+            return False
+
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         print(hashed_block)
@@ -222,7 +239,7 @@ class Blockchain:
         #     'amount' : MINING_REWARD
         # }
 
-        reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
+        reward_transaction = Transaction('MINING', self.hosting_node, 'mining signature', MINING_REWARD)
         # reward_transaction = OrderedDict([('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
 
         # for key in last_block:
@@ -237,11 +254,18 @@ class Blockchain:
         block = Block(len(self.__chain), hashed_block, copied_transactions, proof)
 
         # block = {
-        #     'previous_hash': hashed_block, 
+        #      'previous_hash': hashed_block, 
         #     'index': len(blockchain),
         #     'transactions': copied_transactions,
         #     'proof' : proof
         # }
 
+        
+        for tx in block.transactions:
+            if not Wallet.verify_transaction(tx):
+                return False
+
         self.__chain.append(block)
+        self.__open_transactions = []
+        self.save_data()
         return True
