@@ -49,7 +49,6 @@ class Wallet:
 
     def sign_transaction(self, sender, recipient, amount):
         """Sign a transaction and return the signature.
-
         Arguments:
             :sender: The sender of the transaction.
             :recipient: The recipient of the transaction.

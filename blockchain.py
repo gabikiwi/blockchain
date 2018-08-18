@@ -62,8 +62,15 @@ class Blockchain:
                 # We need to convert  the loaded data because Transactions should use OrderedDict
                 updated_blockchain = []
                 for block in blockchain:
+
                     converted_tx = [Transaction(
                         tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
+
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
+
+                    converted_tx = [Transaction(
+                        tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
+
                     updated_block = Block(
                         block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
                     updated_blockchain.append(updated_block)
@@ -72,8 +79,13 @@ class Blockchain:
                 # We need to convert  the loaded data because Transactions should use OrderedDict
                 updated_transactions = []
                 for tx in open_transactions:
+
                     updated_transaction = Transaction(
                         tx['sender'], tx['recipient'], tx['signature'], tx['amount'])
+
+                    updated_transaction = Transaction(
+                        tx['sender'], tx['recipient'], tx['signature'], tx['amount'])
+
                     updated_transactions.append(updated_transaction)
                 self.__open_transactions = updated_transactions
         except (IOError, IndexError):
