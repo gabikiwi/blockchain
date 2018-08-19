@@ -1,6 +1,8 @@
 playground/
 assigments/
 utility/__pycache__
+venv_pycoin
+.vscode
 
 
 # Byte-compiled / optimized / DLL files
