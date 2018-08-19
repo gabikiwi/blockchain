@@ -40,8 +40,10 @@ class Wallet:
                 private_key = keys[1]
                 self.public_key = public_key
                 self.private_key = private_key
+            return True
         except (IOError, IndexError):
             print('Loading wallet failed...')
+            return False
 
     def generate_keys(self):
         """Generate a new pair of private and public key."""
@@ -51,6 +53,7 @@ class Wallet:
 
     def sign_transaction(self, sender, recipient, amount):
         """Sign a transaction and return the signature.
+
         Arguments:
             :sender: The sender of the transaction.
             :recipient: The recipient of the transaction.

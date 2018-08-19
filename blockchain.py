@@ -62,15 +62,8 @@ class Blockchain:
                 # We need to convert  the loaded data because Transactions should use OrderedDict
                 updated_blockchain = []
                 for block in blockchain:
-
                     converted_tx = [Transaction(
                         tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
-
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
-
-                    converted_tx = [Transaction(
-                        tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
-
                     updated_block = Block(
                         block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
                     updated_blockchain.append(updated_block)
@@ -79,13 +72,8 @@ class Blockchain:
                 # We need to convert  the loaded data because Transactions should use OrderedDict
                 updated_transactions = []
                 for tx in open_transactions:
-
                     updated_transaction = Transaction(
                         tx['sender'], tx['recipient'], tx['signature'], tx['amount'])
-
-                    updated_transaction = Transaction(
-                        tx['sender'], tx['recipient'], tx['signature'], tx['amount'])
-
                     updated_transactions.append(updated_transaction)
                 self.__open_transactions = updated_transactions
         except (IOError, IndexError):
@@ -124,6 +112,8 @@ class Blockchain:
     def get_balance(self):
         """Calculate and return the balance for a participant.
         """
+        if self.hosting_node == None:
+            return None
         participant = self.hosting_node
         # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
         # This fetches sent amounts of transactions that were already included in blocks of the blockchain
@@ -183,7 +173,6 @@ class Blockchain:
         # Fetch the currently last block of the blockchain
         if self.hosting_node == None:
             return None
-            # return False
         last_block = self.__chain[-1]
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
@@ -200,13 +189,11 @@ class Blockchain:
         copied_transactions = self.__open_transactions[:]
         for tx in copied_transactions:
             if not Wallet.verify_transaction(tx):
-               # return False
-               return None
+                return None
         copied_transactions.append(reward_transaction)
         block = Block(len(self.__chain), hashed_block,
                       copied_transactions, proof)
         self.__chain.append(block)
         self.__open_transactions = []
         self.save_data()
-        # return True
         return block
